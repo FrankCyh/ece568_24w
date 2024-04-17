@@ -1,0 +1,19 @@
+Target1:
+strcpy() function does not check the length of string, so by passing a string that is 128 bytes to overflow the buffer, 
+and overwrite the return address at 0x3021fec8, making it points to the begining of the buffer(0x3021fe50). The buffer 
+contains NOP in the begining followed by the shellcode, followed by the new return address. Once the foo fuction returns, 
+it will start execute the instruction written in the buffer and creates a shell.
+
+Target2:
+In foo the string length is bounded to 272, it allows hacker to overflow the varible 'i' and 'len' which is located 
+after the 'buf'. Hacker overflow the 'buf' and overwrite 'len' to 284 and 'i' to 268, allowing the loop to continue
+copying the string. Eventually overwrite the return address(0x3021fe98) points to begining of the buffer(0x3021fd80). 
+Once the foo fuction returns, it will start execute the instruction written in the buffer and creates a shell.
+
+Target3:
+In `bar` function, The statement, `targ[i] = arg[i]`, will overwrite the return address, when `i` is from 68 to 71.
+Sploit: Note that `buff` pointer will start from `buf[4]` because of `targ += strlen(targ)`. Thus, the `attack_s[i]` matches `buf[i+4]`.
+
+Target4:
+In `foo` function, `*b++ = *a++;`, will overwrite the return address, when `i` is from 184 to 188.
+Sploit: Overwrite the value of `i` first (need to be less than `len`), then overwrite `len`. The overwriting of `i` and `len` has to match the position of return address.

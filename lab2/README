@@ -1,0 +1,58 @@
+# Part 1: TOTP (Google Authenticator)
+
+## Implementation Overview
+- Implements the Time-Based One-Time Password (TOTP) algorithm, an extension of the HMAC-based One-Time Password (HOTP) algorithm, which incorporates a time factor to generate OTP values.
+
+## Included Programs
+- `generateQRcode.c`: Generates an `otpauth://` URI and a QR code that encodes information (secret key, issuer, and account name) to set up a TOTP token on a client device.
+- `validateQRcode.c`: Generates the TOTP value from the secret and then verifies whether the user has provided correct values.
+
+## Implementation Details
+The HMAC-based One-Time Password (HOTP) algorithm involves a process of generating a one-time password based on a cryptographic hash function applied to a counter value and a secret key. The "truncate" function is a crucial part of the HOTP algorithm, as defined in RFC 4226. This function is used to dynamically extract a user-friendly value from the HMAC-SHA-1 result, which is a 160-bit (20-byte) hash value.
+
+### How the Truncate Function Works
+1. **HMAC-SHA-1 Calculation**: First, an HMAC-SHA-1 value is generated using the counter and the shared secret key. This results in a 20-byte (160-bit) hash output.
+2. **Dynamic Truncation**: The truncate function takes the least 4 bits of the hash value's last byte to determine an offset. This offset is used to select a 4-byte (32-bit) dynamic binary code from the hash result. The offset ensures that the selection is somewhat unpredictable, adding to the security of the generated password.
+3. **Extracting a 31-bit String**: From the selected 4-byte segment, the top bit is cleared to make sure the result is a positive 31-bit integer. This step is necessary because the final HOTP value needs to be easily representable and manageable.
+4. **Modulo Operation**: The 31-bit integer is then reduced using a modulo operation to ensure it fits within a desired range, typically 10^6 to 10^8, to produce a 6 to 8 digit OTP. The most common practice is to use 10^6, resulting in a 6-digit OTP.
+5. **Output**: The result of the modulo operation is the HOTP value, which is then presented to the user or a system for authentication purposes.
+
+## Usage
+### Generating QR Code
+When run, the `generateQRcode` program should produce output in the following format, including the barcodes:
+
+```shell
+$ ./generateQRcode ECE568 student1 12345678901234567890
+Issuer: ECE568
+Account Name: student1
+Secret (Hex): 12345678901234567890
+
+otpauth://totp/student1?issuer=ECE568&secret=CI2FM6EQCI2FM6EQ&period=30
+![alt text](image.png)
+```
+
+### Validating QR Code
+When running the `validateQRcode` program, provide your key and OTP:
+
+```shell
+./validateQRcode 12345678901234567890 134318
+```
+
+Expected output:
+
+```
+Secret (Hex): 12345678901234567890
+TOTP Value: 134318 (invalid)
+```
+
+# Part 2: Biometric Multi-Factor Authentication
+
+For this part, we completed three functions to communicate with the authentication app server and verify that credentials were enabled.
+
+For each of these functions, we supplied the same headers as the other fucntions and follow similar steps to get and parse reponse.
+
+`getAuthenticatorStatus` connects to the authentication app server to check whether the user has successfully activated their account on phone.
+
+`sendStepup` pushes an authentication request to the user.
+
+`getStepupStatus` This function checks if the user has successfully authenticate the verification request.

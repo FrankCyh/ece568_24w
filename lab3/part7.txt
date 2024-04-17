@@ -1,0 +1,2 @@
+101; update employee set salary=999 where userid=101;
+101; create trigger change_email before insert on employee for each row update employee set E-Mail = 'ece568_22s@utoronto.ca' where userid = NEW.userid;

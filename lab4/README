@@ -1,0 +1,39 @@
+Part 1 Explanation:
+    1. `dig utoronto.ca +short` return ipv4 address of utoronto.ca.
+    2. The name servers for utoronto.ca are included in the AUTHORITY section of `dig utoronto.ca`. Then uses `dig <name_server> +short` to get the IP address
+    3. `dig utoronto.ca mx +short` returns utoronto.ca's mail server. Then uses `dig <mail_server> +short` to get the IP address
+
+Part 2 Explanation:
+    My configuration: 
+        listen-on port (Named port number): 8359;
+        query-source port (RNDC port number): 8358;
+
+    The DNS proxy will need to:
+    1. Listen for incoming DNS queries on a specified port. User can query by `dig @127.0.0.1 -p <port_to_run_proxy_on> <query_such_as_example.com>`
+    2. Forward these queries to the BIND server's port 8358.
+    3. Receive the BIND server's response.
+    4. Forward the response back to the client (the original sender of the dig command).
+
+    Command: 
+    1. ./run_bind.sh
+    2. python2 dnsproxy_starter.py --port 8358 --dns_port 8359
+    3. dig @127.0.0.1 -p 8358 example.com
+
+Part 3 Explanation:
+    Based on part2, when I got the BIND server's response, I changed `response.an[i].rdata` and `response.ns[i].rdata` to the malicious IP and name server for `i` in `response.ancount` and `response.nscount`. Thus, IP and every name server is changed.
+
+    Command: 
+    1. ./run_bind.sh
+    2. python2 dnsproxy_starter.py --port 8358 --dns_port 8359 --spoof_response
+    3. dig @127.0.0.1 -p 8358 example.com
+
+Part 4 Explanation:
+    We first sent a query message to the BIND server with a random domain name. After we sent the message, we spoofed an answer message with name servers to be "ns.dnslabattacker.net", and id to be a random 8-bit number, trying to match the transaction ID.
+    We tried the process above in an infinite loop.
+    We checked if the faked name servers' name are in the returned answer from the BIND server to see if the attack is successful and break if it succeed.
+
+    Command:
+    1. ./run_bind.sh
+    2. python2 part4_starter.py --ip 127.0.0.1 --port 8359 --query_port 8358
+    3. dig @127.0.0.1 NS example.com -p 8359 | grep ns.dnslabattacker.net.
+    4. ./bin/rndc -c etc/rndc.conf dumpdb -cache & cat named_dump.db | grep ns.dnslabattacker.net
